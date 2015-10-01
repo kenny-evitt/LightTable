@@ -10,7 +10,7 @@ An Electron app consists of a **main process** and some number of **renderer pro
 From the Electron Quick Start doc:
 
 > In web pages, calling native GUI related APIs is not allowed because managing native GUI resources in web pages is very dangerous and it is easy to leak resources. If you want to perform GUI operations in a web page, the renderer process of the web page must communicate with the main process to request that the main process perform those operations.
-> 
+>
 > In Electron, we have provided the [ipc](https://github.com/atom/electron/blob/master/docs/api/ipc-renderer.md) module for communication between the main process and renderer process. There is also a [remote](https://github.com/atom/electron/blob/master/docs/api/remote.md) module for RPC style communication.
 
 ## *package.json*
@@ -246,4 +246,44 @@ The `createWindow` function loads the Light Table 'home page' *deploy/core/Light
 </html>
 ```
 
-The final script block creates a new `script` block and loads the file *node_modules/lighttable/bootstrap.js* into it. It also runs the function `lt.objs.app.init()` when the script has finished loading. The *bootstrap.js* file is the build output of the core Light Table ClojureScript project.
+The final script block creates a new `script` block and loads the file *deploy/core/node_modules/lighttable/bootstrap.js* into it. It also runs the function `lt.objs.app.init()` when the script has finished loading. The *bootstrap.js* file is the build output of the core Light Table ClojureScript project.
+
+## *app.cljs*
+
+The `lt.objs.app` namespace code is in the file *src/lt/objs/app.cljs*. The `init` function:
+
+```
+(defn init []
+  (object/raise app :deploy)
+  (object/raise app :pre-init)
+  (object/raise app :init)
+  (object/raise app :post-init)
+  (object/raise app :show))
+```
+
+The `object/raise` function is our first contact with Light Table's BOT architecture. See the [BOT](https://github.com/LightTable/LightTable/blob/master/doc/BOT.md) document for an overview.
+
+The five function calls above all 'raise' a trigger, e.g. `:deploy`, for the `app` object, which do the following, respectively:
+
+ 1. `:deploy` – Check for new versions of LT. See *src/lt/objs/deploy.cljs*.
+ 2. `:pre-int` – Runs a `::run-pre-init` behavior defined in *src/lt/objs/app.cljs* and a `::initial-behaviors` behavior defined in *src/lt/objs/settings.cljs*. The latter behavior loads all of the other behaviors and keymaps.
+ 3. `:init` –
+
+The `app` object:
+
+```
+(object/object* ::app
+                :tags #{:app :window}
+                :delays 0
+                :init (fn [this]
+                        (ctx/in! :app this)))
+
+(def app (object/create ::app))
+
+;; Handles events e.g. focus, blur and close
+(ipc/on "app" #(object/raise app (keyword %)))
+```
+
+The `:init` function for the `::app` object (a Light Table object) 'enters' (?) a 'context'
+
+The function `ipc/on` registers the `#(object/raise app (keyword %))` partial as the callback for any events that occur on the *app* channel. See [the Electron doc about the `ipc` module](https://github.com/atom/electron/blob/master/docs/api/ipc-main-process.md).
