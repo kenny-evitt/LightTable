@@ -7,7 +7,8 @@
             [lt.objs.thread]
             [lt.objs.editor :as editor]
             [clojure.string :as string]
-            [lt.util.js :refer [wait]])
+            [lt.util.js :refer [wait]]
+            [crate.core :as crate])
   (:require-macros [lt.macros :refer [behavior background defui]]))
 
 (def flat-parser (background (fn [obj-id contents]
@@ -134,6 +135,12 @@
 (defui ->helper [beh]
   [:div
    [:h2 (:desc beh (:name beh))]
+   (when (:details beh)
+     (list [:br]
+           [:br]
+           [:div (crate/raw (:details beh))]
+           [:br]
+           [:br]))
    (when (:params beh)
      [:div
                 (for [p (:params beh)]
