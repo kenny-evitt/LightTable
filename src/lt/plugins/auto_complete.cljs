@@ -252,6 +252,7 @@
 (defn start-hinting
   ([this] (start-hinting this nil))
   ([this opts]
+   (.log js/console "Starting hinting ...")
    (let [pos (editor/->cursor this)
          token (get-token this pos)
          line (editor/line-handle this (:line pos))
@@ -272,7 +273,8 @@
         :else (do
                 (js/CodeMirror.on line "change" on-line-change)
                 (dom/append (dom/$ :body) elem)
-                (js/CodeMirror.positionHint (editor/->cm-ed this) elem (:start token))))))))
+                (js/CodeMirror.positionHint (editor/->cm-ed this) elem (:start token))))))
+   (.log js/console "Finished hinting")))
 
 (behavior ::show-hint
           :triggers #{:hint}

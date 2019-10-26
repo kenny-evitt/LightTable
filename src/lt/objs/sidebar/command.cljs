@@ -154,11 +154,15 @@
 (behavior ::change!
           :triggers #{:change!}
           :reaction (fn [this v]
+                      (.log js/console "Starting sidebar command `change!` behavior reaction ...")
                       (let [v (object/raise-reduce this :change+ v)]
+                        (.log js/console "`@this`:")
+                        (.log js/console (pr-str @this))
                         (when-not (= (:search @this) v)
                           (object/merge! this {:selected 0
                                                :search v})
-                          (object/raise this :refresh!)))))
+                          (object/raise this :refresh!)))
+                      (.log js/console "Finished sidebar command `change!` behavior reaction")))
 
 (behavior ::escape!
           :triggers #{:escape!}

@@ -192,6 +192,7 @@
   [obj m]
   (when (and m (not (map? m)))
     (throw (js/Error. (str "Merge requires a map: " m))))
+  (.log js/console (str "lt.object/merge! - m:" (pr-str m))
   (swap! obj merge m))
 
 (defn- handle-redef [odef]
